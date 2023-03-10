@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "SteamUserStatsBot"
+version = "0.1.0"
+description = "Discord bot for steam user stats"
+authors = ["Michael Genson <71845777+michael-genson@users.noreply.github.com>"]
+license = "GNU"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+discord-py = "^2.2.2"
+httpx = "^0.23.3"
+pydantic = "^1.10.5"
+cachetools = "^5.3.0"
+sqlalchemy = "^2.0.5.post1"
+alembic = "^1.10.2"
+discord-py-pagination = "^0.0.5"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+mypy = "^1.1.1"
+types-cachetools = "^5.3.0.4"
+isort = "^5.12.0"
