@@ -56,26 +56,33 @@ class Achievements(DiscordCogBase):
         if not (user and user.steam_api_key and user.steam_id_64):
             return
 
-        steam = SteamUserService(user.steam_api_key)
-        all_owned_games = await steam.get_owned_games(user.steam_id_64)
-        stats = await steam.get_user_achievements(
-            user.steam_id_64,
-            [game.app_id for game in all_owned_games],
-            include_global_percentages=True,
-        )
-
-        achievements = [achievement for stat in stats for achievement in stat.achievements if achievement.achieved]
-        achievements.sort(key=lambda x: x.global_percent or 0)
-
-        embeds: list[Embed] = []
-        for chunk in chunk_list(achievements, DISCORD_ACHIEVEMENT_PAGE_SIZE):
-            embeds.append(
-                Embed(
-                    title=f"Your Achievements",
-                    description="\n".join([self.format_achievement(achievement) for achievement in chunk]),
-                )
+        status_message = await ctx.send("Fetching achievement data, hang tight!")
+        try:
+            steam = SteamUserService(user.steam_api_key)
+            all_owned_games = await steam.get_owned_games(user.steam_id_64)
+            stats = await steam.get_user_achievements(
+                user.steam_id_64,
+                [game.app_id for game in all_owned_games],
+                include_global_percentages=True,
             )
 
+            achievements = [achievement for stat in stats for achievement in stat.achievements if achievement.achieved]
+            achievements.sort(key=lambda x: x.global_percent or 0)
+
+            embeds: list[Embed] = []
+            for chunk in chunk_list(achievements, DISCORD_ACHIEVEMENT_PAGE_SIZE):
+                embeds.append(
+                    Embed(
+                        title=f"Your Achievements",
+                        description="\n".join([self.format_achievement(achievement) for achievement in chunk]),
+                    )
+                )
+
+        except Exception:
+            await status_message.delete()
+            raise
+
+        await status_message.delete()
         await Paginator.Simple(timeout=DISCORD_PAGINATOR_TIMEOUT).start(ctx, pages=embeds)
 
     @check_rare_achievements.error
