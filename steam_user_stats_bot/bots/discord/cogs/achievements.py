@@ -46,7 +46,8 @@ class Achievements(DiscordCogBase):
         nl = "\n"
         return f"```{nl.join(builder)}```"
 
-    @command(checkes=[require_setup_user])
+    @command()
+    @require_setup_user()
     async def check_rare_achievements(self, ctx: Context):
         """Show your rarest achievements"""
 
