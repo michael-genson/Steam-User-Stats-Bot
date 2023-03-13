@@ -16,11 +16,6 @@ ENV PYTHONUNBUFFERED=1 \
 # prepend poetry to path
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
-# create user account
-RUN useradd -u 911 -U -d $PROJECT_HOME -s /bin/bash abc \
-    && usermod -G users abc \
-    && mkdir $PROJECT_HOME
-
 ###############################################
 # Builder Image
 ###############################################
@@ -68,4 +63,4 @@ ENV APP_PORT=9000
 EXPOSE ${APP_PORT}
 
 RUN chmod +x run.py
-CMD [ "sh", "-c", "python run.py ${DISCORDKEY}" ]
+CMD [ "sh", "-c", "python -u run.py ${DISCORDKEY}" ]
