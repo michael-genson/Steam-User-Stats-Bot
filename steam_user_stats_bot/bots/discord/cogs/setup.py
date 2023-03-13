@@ -5,9 +5,13 @@ from discord.ext.commands.errors import CommandInvokeError
 from ....config import DISCORD_BOT_PREFIX
 from ....models.bots import DiscordCogBase
 from ....models.db import User
-from ....models.exceptions import InvalidResponseException, InvalidSteamKeyException
+from ....models.exceptions import (
+    InvalidResponseException,
+    InvalidSteamKeyException,
+    UserNotSetupException,
+)
 from ....services.steam import SteamUserService
-from .. import db
+from .. import db, require_setup_user
 
 
 class Setup(DiscordCogBase):
@@ -80,3 +84,42 @@ class Setup(DiscordCogBase):
             + "Find your steamID64 here: https://steamidfinder.com",
             suppress_embeds=True,
         )
+
+    @command()
+    async def get_steam_info(self, ctx: Context):
+        """Check out your stored Steam user info, if you're set up"""
+
+        user = db.get_user(ctx.author.id)
+        if not user:
+            await ctx.send("No steam user info found")
+            return
+
+        await ctx.send(f"API Key: {user.steam_api_key or 'UNKNOWN'}\nsteamID64: {user.steam_id_64 or 'UNKNOWN'}")
+
+    @command()
+    @require_setup_user()
+    async def get_profile_url(self, ctx: Context):
+        """Look up your on Steam profile URL"""
+
+        user = db.get_user(ctx.author.id)
+        if not (user and user.steam_api_key and user.steam_id_64):
+            return
+
+        steam = SteamUserService(user.steam_api_key)
+        steam_user = await steam.get_user_summary(user.steam_id_64)
+        if not steam_user:
+            await ctx.send(f"User not found. Try running `{DISCORD_BOT_PREFIX}setup` again")
+            return
+
+        await ctx.send(f"Your profile URL is {steam_user.profile_url}")
+        return
+
+    @get_profile_url.error
+    async def achievement_error(self, ctx: Context, ex: Exception):
+        if isinstance(ex, UserNotSetupException):
+            # require_setup_user already handles this
+            return
+
+        print(f"{type(ex).__name__}: {ex}")  # TODO: have better exception logging
+        await ctx.send("Oops, something went wrong!")
+        return
