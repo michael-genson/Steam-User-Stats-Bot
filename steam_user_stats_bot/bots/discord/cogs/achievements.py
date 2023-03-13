@@ -4,6 +4,7 @@ from discord.ext.commands import Context, command
 
 from ....config import DISCORD_ACHIEVEMENT_PAGE_SIZE, DISCORD_PAGINATOR_TIMEOUT
 from ....models.bots import DiscordCogBase
+from ....models.exceptions import UserNotSetupException
 from ....models.steam import SteamUserGameStatsAchievement
 from ....services.steam import SteamUserService
 from .. import db, require_setup_user
@@ -76,3 +77,13 @@ class Achievements(DiscordCogBase):
             )
 
         await Paginator.Simple(timeout=DISCORD_PAGINATOR_TIMEOUT).start(ctx, pages=embeds)
+
+    @check_rare_achievements.error
+    async def achievement_error(self, ctx: Context, ex: Exception):
+        if isinstance(ex, UserNotSetupException):
+            # require_setup_user already handles this
+            return
+
+        print(f"{type(ex).__name__}: {ex}")  # TODO: have better exception logging
+        await ctx.send("Oops, something went wrong!")
+        return
