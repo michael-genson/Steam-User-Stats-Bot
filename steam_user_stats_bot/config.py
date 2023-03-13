@@ -28,6 +28,8 @@ DB_URL = f"sqlite+pysqlite:///{DB_DIR}"
 STEAM_WEB_API_BASE_URL = "http://api.steampowered.com"
 STEAM_CACHE_TTL = _load("STEAM_CACHE_TTL", 60 * 30, int)
 """Cache TTL in seconds"""
+STEAM_DEFAULT_REQUEST_TIMEOUT = _load("STEAM_DEFAULT_REQUEST_TIMEOUT", 10.0, float)
+"""HTTPX Timeout in seconds"""
 
 DISCORD_BOT_PREFIX = _load("DISCORD_BOT_PREFIX", "$", str)
 DISCORD_ACHIEVEMENT_PAGE_SIZE = _load("DISCORD_ACHIEVEMENT_PAGE_SIZE", 6, int)

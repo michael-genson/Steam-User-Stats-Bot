@@ -4,7 +4,7 @@ from typing import Any, Coroutine, TypeVar
 from cachetools.func import ttl_cache
 
 from ..clients.steam import SteamWebAPI
-from ..config import STEAM_CACHE_TTL
+from ..config import STEAM_CACHE_TTL, STEAM_DEFAULT_REQUEST_TIMEOUT
 from ..models.db import User
 from ..models.exceptions import InvalidResponseException, InvalidSteamKeyException
 from ..models.steam import (
@@ -21,10 +21,10 @@ class SteamUserService:
     """Docs: https://developer.valvesoftware.com/wiki/Steam_Web_API"""
 
     def __init__(
-        self, api_key: str, request_timeout: float = 10, max_concurrency: int = 10, language: str = "en-US"
+        self, api_key: str, request_timeout: float | None = None, max_concurrency: int = 10, language: str = "en-US"
     ) -> None:
         self.api_key = api_key
-        self.timeout = request_timeout
+        self.timeout = request_timeout or STEAM_DEFAULT_REQUEST_TIMEOUT
         self.max_concurrency = max_concurrency
         self.language = language
 
